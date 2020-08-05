@@ -16,4 +16,7 @@ return await fetch(url, {
   }).then((res) => res.json());
 ```
 - websocket
--- wss://kij.willy-selma.de
+-- wss://kij.willy-selma.de/ws
+```
+
+```
