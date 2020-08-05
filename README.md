@@ -20,3 +20,12 @@ return await fetch(url, {
 ```
 
 ```
+
+## development
+
+### bake it to an executable binary
+
+Build a linux64 binary: `kicker-server-linux64`
+````bash
+npm run build
+````

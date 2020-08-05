@@ -2,9 +2,19 @@
   "name": "kickerjoiner-server",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "dependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/plugin-transform-regenerator": "^7.4.5",
+    "@babel/plugin-transform-runtime": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "babel-loader": "^8.1.0",
     "json-server": "^0.16.1",
     "command-line-args": "^5.1.1",
+    "pkg": "^4.4.9",
+    "webpack": "^4.36.1",
+    "webpack-cli": "^3.3.6",
     "ws": "^7.2.1"
   },
   "scripts": {
@@ -22,6 +32,11 @@
     "kickerws:logs": "supervisorctl tail kickerws",
     "--process--": "this is a divider",
     "process:running": "ps aux | grep kicker",
-    "process:kill": "kill -9 PID"
+    "process:kill": "kill -9 PID",
+    "--bake it to an executable--": "this is a divider",
+    "build": "npm run babelize && npm run build:linux",
+    "babelize": "node  --experimental-modules --experimental-json-modules config/webpack-app-pkg.config.js",
+    "build:linux": "node node_modules/pkg/lib-es5/bin.js dist/app.js --output kicker-server-linux64 --targets node14-linux-x64",
+    "build:windows": "node node_modules/pkg/lib-es5/bin.js dist/app.js --output kicker-server-win64 --targets node14-win-x64"
   }
 }
