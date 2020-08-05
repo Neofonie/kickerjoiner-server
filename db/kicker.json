@@ -1,0 +1,10 @@
+{
+  "tournaments": [
+    {
+      "id": 1,
+      "date": "05.08.2020 - 08:30",
+      "done": false,
+      "participants": []
+    }
+  ]
+}

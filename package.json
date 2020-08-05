@@ -1,0 +1,27 @@
+{
+  "name": "kickerjoiner-server",
+  "version": "1.0.0",
+  "description": "",
+  "dependencies": {
+    "json-server": "^0.16.1",
+    "command-line-args": "^5.1.1",
+    "ws": "^7.2.1"
+  },
+  "scripts": {
+    "npm:install": "npm install",
+    "svc": "supervisorctl status",
+    "--json storage--": "this is a divider",
+    "kicker": "sh ./scripts/start-json.sh kicker 61235",
+    "kicker:start": "supervisorctl restart kicker",
+    "kicker:stop": "supervisorctl stop kicker",
+    "kicker:logs": "supervisorctl tail kicker",
+    "--websocket server--": "this is a divider",
+    "kickerws": "node ./scripts/websocket-server.js --port=61234",
+    "kickerws:start": "supervisorctl restart kickerws",
+    "kickerws:stop": "supervisorctl stop kickerws",
+    "kickerws:logs": "supervisorctl tail kickerws",
+    "--process--": "this is a divider",
+    "process:running": "ps aux | grep kicker",
+    "process:kill": "kill -9 PID"
+  }
+}
