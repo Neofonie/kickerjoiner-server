@@ -23,31 +23,37 @@ function heartbeatClient() {
     // }, 30000 + 1000);
 }
 
+function sendMessage(data) {
+    if (socket) {
+        socket.send(JSON.stringify(data));
+    }
+}
+
 function connectToWSS() {
     console.log('connectToWSS', wsApi);
     socket = new WebSocket(wsApi);
 
     socket.onmessage = (event) => {
-        console.log('connectToWSS.socket.onmessage', data);
+        console.log('connectToWSS.socket.onmessage', event);
         const data = JSON.parse(event.data);
         console.log(data);
         switch (data.message) {
             case 'CONNECTION_ON': // connection with server is on
                 // store date && clientid
-            break;
+                break;
             case 'GAME_UPDATE': // joined game got an update
                 // store data.gameid to compare joined game
                 // ----
                 // GET fetch /db/games/data.gameid
                 // refresh state to rerender
-            break;
+                break;
             case 'GAME_READY': // four joiners in one game
                 // now activate gogogo button
                 // vibrate app
                 // ----
                 // GET fetch /db/games/data.gameid
                 // refresh state to rerender
-            break;
+                break;
             case 'GAME_GOGOGO': // all four joiners pressed gogog in one game
                 // vibrate app
                 // gogogo screen
@@ -56,13 +62,12 @@ function connectToWSS() {
                 // refresh state to rerender
                 // ----
                 // clear state for new game
-            break;
+                break;
         }
     };
 
     // socket.send(JSON.stringify({
     //  message: 'PLUS_ONE',
-    //  nick: 'joiner name',
     // }));
 
     // socket.send(JSON.stringify({
@@ -71,21 +76,21 @@ function connectToWSS() {
     // }));
 
     // connection to server
-    socket.onopen = () => {
-        console.log('connectToWSS.socket.onopen');
+    socket.onopen = (e) => {
+        console.log('connectToWSS.socket.onopen', e);
         heartbeatClient();
     };
     // connection closes
-    socket.onclose = () => {
-        console.log('connectToWSS.socket.onclose');
+    socket.onclose = (e) => {
+        console.log('connectToWSS.socket.onclose', e);
         clearTimeout(pingTimeout);
     };
     // no connection to server
     socket.onerror = (e) => {
-        console.log('connectToWSS.socket.onerror', e.message);
+        console.log('connectToWSS.socket.onerror', e);
     };
     // ping pong with server to stay in connection
     socket.onping = heartbeatClient;
-}
+};
 
 connectToWSS();
