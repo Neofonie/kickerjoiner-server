@@ -62,6 +62,7 @@ function connectToWSS() {
 
     // socket.send(JSON.stringify({
     //  message: 'PLUS_ONE',
+    //  nick: 'joiner name',
     // }));
 
     // socket.send(JSON.stringify({
