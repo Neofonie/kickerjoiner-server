@@ -5,6 +5,7 @@ const options = commandLineArgs([
 ]);
 const port = options.port;
 const host = '0.0.0.0';
+const onlineApi = 'https://kij.willy-selma.de/db';
 console.log('hi there kickerjoiner websocket', host, port);
 
 let wss = null;
@@ -22,6 +23,16 @@ function heartbeat() {
 
 function getTimestampNow() {
     return Math.floor(Date.now() / 1000);
+}
+
+async function db(method, url, data) {
+    return await fetch(onlineApi + url, {
+        method,
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+    }).then((res) => res.json());
 }
 
 function initWSS() {
@@ -47,10 +58,13 @@ function initWSS() {
             switch (data.message) {
                 // required: msg.nick
                 case 'PLUS_ONE':
-                    // GET fetch
-                    // if running GAME -> return GAME_ID
-                    //  POST /db/games/GAME_ID/joiner
-                    //  {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false}
+                    // - GET fetch active games
+                    // const game = db('GET', '/games')
+                    // # if running GAME -> return GAME_ID
+                    // gameid = game.id;
+                    // - PATCH /db/games/GAME_ID/joiner
+                    // const newjoiner = {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false};
+                    // await db('PATCH', '/games/'+ gameid, {joiner: [...game.joiner, newjoiner]});
 
                     // if no running GAME
                     //  POST /db/games -> get GAME_ID
@@ -78,7 +92,7 @@ function initWSS() {
             if (!!message) {
                 // answer all clients
                 wss.clients.forEach((otherClient) => {
-                    client.send(JSON.stringify({
+                    otherClient.send(JSON.stringify({
                         message,
                         gameid,
                         clientid: otherClient.id,
