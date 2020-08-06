@@ -28,8 +28,9 @@ function connectToWSS() {
     socket = new WebSocket(wsApi);
 
     socket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
         console.log('connectToWSS.socket.onmessage', data);
+        const data = JSON.parse(event.data);
+        console.log(data);
         switch (data.message) {
             case 'CONNECTION_ON': // connection with server is on
                 // store date && clientid
@@ -59,11 +60,11 @@ function connectToWSS() {
         }
     };
 
-    // socket.send(JSON.stringfy({
+    // socket.send(JSON.stringify({
     //  message: 'PLUS_ONE',
     // }));
 
-    // socket.send(JSON.stringfy({
+    // socket.send(JSON.stringify({
     //  message: 'GOGOGO',
     //  gameid: GAME_ID,
     // }));

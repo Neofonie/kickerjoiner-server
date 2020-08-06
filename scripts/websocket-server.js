@@ -21,7 +21,7 @@ function heartbeat() {
 }
 
 function getTimestampNow() {
-    return Math.floor(Date().now / 1000);
+    return Math.floor(Date.now() / 1000);
 }
 
 function initWSS() {
@@ -39,23 +39,23 @@ function initWSS() {
         console.log('on.connection')
         client.isAlive = true;
 
-        client.on('message', (data) => {
-            console.log('on.message', client.id)
-            const msg = JSON.parse(data);
+        client.on('message', (raw) => {
+            console.log('on.message', client.id, raw)
+            const data = JSON.parse(raw);
             let message = '';
             let gameid = -1;
-            switch (msg.type) {
+            switch (data.message) {
                 // required: msg.nick
                 case 'PLUS_ONE':
                     // GET fetch
                     // if running GAME -> return GAME_ID
                     //  POST /db/games/GAME_ID/joiner
-                    //  {client_id: client.id, nick: msg.nick, date: getTimestampNow(), gogogo: false}
+                    //  {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false}
 
                     // if no running GAME
                     //  POST /db/games -> get GAME_ID
                     //  {date: getTimestampNow(), done: false, joiner: [
-                    //      {client_id: client.id, nick: msg.nick, date: getTimestampNow(), gogogo: false}
+                    //      {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false}
                     //  ]}
 
                     message = 'GAME_UPDATE';
@@ -81,6 +81,7 @@ function initWSS() {
                     client.send(JSON.stringify({
                         message,
                         gameid,
+                        clientid: otherClient.id,
                         date: getTimestampNow(),
                     }));
                 });
