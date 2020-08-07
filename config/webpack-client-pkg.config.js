@@ -6,9 +6,9 @@ import path from "path";
 const config = {
     target: "node",
     mode: 'production',
-    entry: './interface/script.js',
+    entry: './scripts/websocket-client.js',
     output: {
-        filename: 'dist/app.js',
+        filename: 'dist/client.js',
         path: path.resolve(process.env.PWD),
         publicPath: '/',
     },

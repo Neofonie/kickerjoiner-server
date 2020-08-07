@@ -34,9 +34,12 @@
     "process:running": "ps aux | grep kicker",
     "process:kill": "kill -9 PID",
     "--bake it to an executable--": "this is a divider",
-    "build": "npm run babelize && npm run build:linux",
-    "babelize": "node  --experimental-modules --experimental-json-modules config/webpack-app-pkg.config.js",
-    "build:linux": "node node_modules/pkg/lib-es5/bin.js dist/app.js --output kicker-server-linux64 --targets node14-linux-x64",
-    "build:windows": "node node_modules/pkg/lib-es5/bin.js dist/app.js --output kicker-server-win64 --targets node14-win-x64"
+    "build": "npm run babelize && npm run build:server:linux",
+    "babelize": "npm run babelize:server",
+    "babelize:server": "node  --experimental-modules --experimental-json-modules config/webpack-server-pkg.config.js",
+    "babelize:client": "node  --experimental-modules --experimental-json-modules config/webpack-client-pkg.config.js",
+    "build:server:linux": "node node_modules/pkg/lib-es5/bin.js dist/server.js --output kicker-server-linux64 --targets node14-linux-x64",
+    "build:client:linux": "node node_modules/pkg/lib-es5/bin.js dist/client.js --output kicker-client-linux64 --targets node14-linux-x64",
+    "build:windows": "node node_modules/pkg/lib-es5/bin.js dist/server.js --output kicker-server-win64 --targets node14-win-x64"
   }
 }

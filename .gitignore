@@ -1,3 +1,4 @@
 /.idea/
 /node_modules/
-kicker-server-linux64
+kicker-server-*
+kicker-client-*
