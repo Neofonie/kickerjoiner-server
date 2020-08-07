@@ -1,131 +1,133 @@
-const WebSocket = require("ws");
-const commandLineArgs = require('command-line-args')
-const options = commandLineArgs([
-    { name: 'port', alias: 'p', type: Number },
-]);
-const port = options.port;
-const host = '0.0.0.0';
-const onlineApi = 'https://kij.willy-selma.de/db';
-console.log('hi there kickerjoiner websocket', host, port);
+import WebSocket from 'ws';
+import commandLineArgs from 'command-line-args';
+import {EventEmitter} from 'events';
 
-let wss = null;
-let isAlive = false;
-let interval = null;
+export default class KickerJoinerServer {
+    constructor(options) {
+        //
+        this.defaults = {
+            port: 61234,
+            host: '0.0.0.0',
+            baseUrl: 'https://kij.willy-selma.de/db',
+        }
 
-function noop() {
-}
+        //
+        this.options = {
+            ...this.defaults,
+            ...commandLineArgs([
+                {
+                    name: 'port',
+                    alias: 'p',
+                    type: Number
+                },
+            ])
+        }
 
-function heartbeat() {
-    isAlive = true;
-    console.log('on.pong -> heartbeat')
-    return "ping";
-}
+        this.event = new EventEmitter();
+        this.engine = null;
+        this.isAlive = false;
+        this.interval = null;
+        this.clients = [];
 
-function getTimestampNow() {
-    return Math.floor(Date.now() / 1000);
-}
+        this.engine = new WebSocket.Server({
+            host: this.options.host,
+            port: this.options.port
+        });
 
-async function db(method, url, data) {
-    return await fetch(onlineApi + url, {
-        method,
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-    }).then((res) => res.json());
-}
+        this.engine.on('connection', client => {
+            client.id = client._socket._handle.fd;
+            client.isAlive = true;
 
-function initWSS() {
-    console.log('initWSS')
-    if (wss !== null) {
-        clearInterval(interval);
-        interval = null;
+            // events
+            client.on('message', raw => this.onMessage(client, raw));
+            client.on('close', () => this.removeClient(client));
+            client.on('pong', () => this.heartbeat(client));
+
+            // send welcome message
+            this.send(client, {
+                message: 'CONNECTION_ON',
+                date: this.getTimestampNow(),
+                clientId: client.id,
+            });
+
+            // add client to the client stack
+            this.clients.push(client);
+        });
+
+        // register messages as events
+        //
+        this.on('PLUS_ONE', (client, data) => {
+            const message = 'GAME_UPDATE';
+            const gameId = 1;
+
+            this.sendAll({
+                message,
+                gameId,
+                date: this.getTimestampNow(),
+            });
+        });
+
+        //
+        this.on('GOGOGO', (client, data) => {
+            const message = 'GAME_UPDATE';
+            const gameId = 1;
+
+            this.sendAll({
+                message,
+                gameId,
+                date: this.getTimestampNow(),
+            });
+        });
     }
 
-    wss = new WebSocket.Server({ host, port });
+    removeClient(client) {
+        this.clients = this.clients.filter(c => c.id !== client.id);
+    }
 
-    wss.on('connection', (client) => {
-        // set id
-        client.id = client._socket._handle.fd;
-        console.log('on.connection')
-        client.isAlive = true;
+    heartbeat() {
+        this.isAlive = true;
+        console.log('on.pong -> heartbeat');
+        return "ping";
+    }
 
-        client.on('message', (raw) => {
-            console.log('on.message', client.id, raw)
-            const data = JSON.parse(raw);
-            let message = '';
-            let gameid = -1;
-            switch (data.message) {
-                // required: msg.nick
-                case 'PLUS_ONE':
-                    // - GET fetch active games
-                    // const game = db('GET', '/games')
-                    // # if running GAME -> return GAME_ID
-                    // gameid = game.id;
-                    // - PATCH /db/games/GAME_ID/joiner
-                    // const newjoiner = {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false};
-                    // await db('PATCH', '/games/'+ gameid, {joiner: [...game.joiner, newjoiner]});
+    getTimestampNow() {
+        return Math.floor(Date.now() / 1000);
+    }
 
-                    // if no running GAME
-                    //  POST /db/games -> get GAME_ID
-                    //  {date: getTimestampNow(), done: false, joiner: [
-                    //      {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false}
-                    //  ]}
+    onMessage(client, raw) {
+        console.log('on.message', client.id, raw);
+        const data = JSON.parse(raw);
 
-                    message = 'GAME_UPDATE';
-                    gameid = 1;
+        // elevate the message field as event
+        data.message ? this.emit(data.message, client, data) : null;
+    }
 
-                    // if joiner.gogogo === false && .length === 4
-                    //    MESSAGE = 'GAME_READY';
-                    break;
-                case 'GOGOGO':
-                    // PATCH /db/games/GAME_ID/joiner/CLIENTID -> gogogo:true
+    send(client, data) {
+        const message = JSON.stringify(data);
+        client.send(message);
+    }
 
-                    message = 'GAME_UPDATE';
-                    gameid = 1;
-
-                    // if joiner.gogogo === false && .length === 4
-                    //    MESSAGE = 'GAME_GOGOGO';
-                    break;
-            }
-
-            if (!!message) {
-                // answer all clients
-                wss.clients.forEach((otherClient) => {
-                    otherClient.send(JSON.stringify({
-                        message,
-                        gameid,
-                        clientid: otherClient.id,
-                        date: getTimestampNow(),
-                    }));
-                });
+    sendAll(data) {
+        let message = JSON.stringify(data);
+        this.engine.clients.forEach(client => {
+            message.clientId = client.id;
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(message);
             }
         });
-        // send connected
-        client.send(JSON.stringify({
-            message: 'CONNECTION_ON',
-            date: getTimestampNow(),
-            clientid: client.id,
-        }));
+    }
 
-        // keep alive heartbeat
-        // interval = setInterval(function ping() {
-        //     wss.clients.forEach(function each(otherClient) {
-        //         if (client.isAlive === false) {
-        //             return otherClient.terminate();
-        //         }
-        //         otherClient.isAlive = false;
-        //         otherClient.ping(noop);
-        //     });
-        // }, 30000);
+    on() {
+        this.event.on.apply(this.event, Array.from(arguments));
+    }
 
-        wss.on('close', () => {
-            console.log('on.close')
-            //clearInterval(interval);
-        });
-
-        client.on('pong', heartbeat);
-    });
+    emit() {
+        this.event.emit.apply(this.event, Array.from(arguments));
+    }
 }
 
-initWSS();
+
+// run it
+new KickerJoinerServer({
+    //...
+});

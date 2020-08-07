@@ -26,7 +26,7 @@
     "kicker:stop": "supervisorctl stop kicker",
     "kicker:logs": "supervisorctl tail kicker",
     "--websocket server--": "this is a divider",
-    "kickerws": "node ./scripts/websocket-server.js --port=61234",
+    "kickerws": "node --experimental-modules --experimental-json-modules ./scripts/websocket-server.js --port=61234",
     "kickerws:start": "supervisorctl restart kickerws",
     "kickerws:stop": "supervisorctl stop kickerws",
     "kickerws:logs": "supervisorctl tail kickerws",
