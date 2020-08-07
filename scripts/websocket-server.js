@@ -8,7 +8,7 @@ export default class KickerJoinerServer {
         this.defaults = {
             port: 61234,
             host: '0.0.0.0',
-            baseUrl: 'https://kij.willy-selma.de/db',
+            baseURL: 'https://kij.willy-selma.de/db',
         }
 
         //
@@ -65,6 +65,26 @@ export default class KickerJoinerServer {
                 gameId,
                 date: this.getTimestampNow(),
             });
+
+            // - GET fetch active games
+            // const game = db('GET', '/games')
+            // # if running GAME -> return GAME_ID
+            // gameid = game.id;
+            // - PATCH /db/games/GAME_ID/joiner
+            // const newjoiner = {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false};
+            // this.db('PATCH', '/games/'+ gameid, {joiner: [...game.joiner, newjoiner]}).then();
+
+            // if no running GAME
+            //  POST /db/games -> get GAME_ID
+            //  {date: getTimestampNow(), done: false, joiner: [
+            //      {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false}
+            //  ]}
+
+            // message = 'GAME_UPDATE';
+            // gameid = 1;
+
+            // if joiner.gogogo === false && .length === 4
+            //    MESSAGE = 'GAME_READY';
         });
 
         //
@@ -77,6 +97,14 @@ export default class KickerJoinerServer {
                 gameId,
                 date: this.getTimestampNow(),
             });
+
+            // PATCH /db/games/GAME_ID/joiner/CLIENTID -> gogogo:true
+
+            // message = 'GAME_UPDATE';
+            // gameid = 1;
+
+            // if joiner.gogogo === false && .length === 4
+            //    MESSAGE = 'GAME_GOGOGO';
         });
     }
 
@@ -114,6 +142,20 @@ export default class KickerJoinerServer {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(message);
             }
+        });
+    }
+
+    db(method, url, data) {
+        return new Promise((resolve, reject) => {
+            fetch(`${this.options.baseURL}${url}`, {
+                method,
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            })
+                .then(res => resolve(res.json()))
+                .catch(err => resolve(null));
         });
     }
 
