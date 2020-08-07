@@ -40,6 +40,7 @@
     "babelize:client": "node  --experimental-modules --experimental-json-modules config/webpack-client-pkg.config.js",
     "build:server:linux": "node node_modules/pkg/lib-es5/bin.js dist/server.js --output kicker-server-linux64 --targets node14-linux-x64",
     "build:client:linux": "node node_modules/pkg/lib-es5/bin.js dist/client.js --output kicker-client-linux64 --targets node14-linux-x64",
-    "build:windows": "node node_modules/pkg/lib-es5/bin.js dist/server.js --output kicker-server-win64 --targets node14-win-x64"
+    "build:server:windows": "node node_modules/pkg/lib-es5/bin.js dist/server.js --output kicker-server-win64 --targets node14-win-x64",
+    "build:client:windows": "node node_modules/pkg/lib-es5/bin.js dist/client.js --output kicker-clientr-win64 --targets node14-win-x64"
   }
 }
