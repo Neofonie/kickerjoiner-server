@@ -3,12 +3,14 @@ const fetch = require('node-fetch');
 const commandLineArgs = require('command-line-args')
 const options = commandLineArgs([
     { name: 'port', alias: 'p', type: Number },
+    { name: 'db', alias: 'd', type: Number },
 ]);
 
 const port = options.port;
+const dbNr = options.db || '';
 const host = '0.0.0.0';
-const onlineApi = 'https://kij.willy-selma.de/db';
-console.log('hi there kickerjoiner websocket', host, port);
+const onlineApi = `https://kij.willy-selma.de/db${dbNr}`;
+console.log('hi there kickerjoiner websocket', host, port, onlineApi);
 
 let wss = null;
 let interval = null;
