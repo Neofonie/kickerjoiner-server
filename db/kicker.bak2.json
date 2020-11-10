@@ -1,0 +1,94 @@
+{
+  "settings": {
+    "max-joiner": 4
+  },
+  "games": [
+    {
+      "id": 1,
+      "date": 1596703669,
+      "done": true,
+      "joiner": [
+        {
+          "clientid": 1,
+          "nick": "willy",
+          "date": 1596703669,
+          "gogogo": true
+        },
+        {
+          "clientid": 2,
+          "nick": "michal",
+          "date": 1596703669,
+          "gogogo": true
+        },
+        {
+          "clientid": 3,
+          "nick": "tim",
+          "date": 1596703669,
+          "gogogo": true
+        },
+        {
+          "clientid": 4,
+          "nick": "pizza",
+          "date": 1596703669,
+          "gogogo": true
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "date": 1596703669,
+      "done": false,
+      "joiner": [
+        {
+          "clientid": 1,
+          "nick": "willy",
+          "date": 1596703669,
+          "gogogo": true
+        },
+        {
+          "clientid": 2,
+          "nick": "michal",
+          "date": 1596703669,
+          "gogogo": true
+        },
+        {
+          "clientid": 3,
+          "nick": "tim",
+          "date": 1596703669,
+          "gogogo": true
+        },
+        {
+          "clientid": 4,
+          "nick": "pizza",
+          "date": 1596703669,
+          "gogogo": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "date": 1596704670,
+      "done": false,
+      "joiner": [
+        {
+          "clientid": 1,
+          "nick": "willy",
+          "date": 1596703669,
+          "gogogo": false
+        },
+        {
+          "clientid": 2,
+          "nick": "michal",
+          "date": 1596703669,
+          "gogogo": false
+        },
+        {
+          "clientid": 3,
+          "nick": "tim",
+          "date": 1596703669,
+          "gogogo": false
+        }
+      ]
+    }
+  ]
+}

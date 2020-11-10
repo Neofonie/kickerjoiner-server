@@ -1,24 +1,23 @@
 const WebSocket = require("ws");
+const fetch = require('node-fetch');
 const commandLineArgs = require('command-line-args')
 const options = commandLineArgs([
     { name: 'port', alias: 'p', type: Number },
 ]);
+
 const port = options.port;
 const host = '0.0.0.0';
 const onlineApi = 'https://kij.willy-selma.de/db';
 console.log('hi there kickerjoiner websocket', host, port);
 
 let wss = null;
-let isAlive = false;
 let interval = null;
 
-function noop() {
-}
+function noop() {}
 
 function heartbeat() {
-    isAlive = true;
-    console.log('on.pong -> heartbeat')
-    return "ping";
+    this.isAlive = true;
+    console.log('ws.pong -> heartbeat', this.id)
 }
 
 function getTimestampNow() {
@@ -35,96 +34,156 @@ async function db(method, url, data) {
     }).then((res) => res.json());
 }
 
+async function handlePlusOne(clientId, nickName) {
+    console.log('handlePlusOne', arguments);
+
+    let answer = {
+        gameid: -1,
+        message: '',
+    };
+
+    // - GET fetch active games
+    const newjoiner = { client_id: clientId, nick: nickName, date: getTimestampNow(), gogogo: false };
+    // get only active games, newest first
+    const games = await db('GET', '/games?done=false&_sort=date&_order=desc');
+    // # if running GAME -> return GAME_ID
+    if (games.length !== 0) {
+        let joined = false;
+        games.map((game) => {
+            const gogogoGamers = game.joiner.filter((gamer) => gamer.gogogo === true);
+            let joiner;
+            // join the game
+            if (game.joiner.length < 4 && !joined) {
+                joiner = [
+                    ...game.joiner,
+                    newjoiner,
+                ];
+                db('PATCH', '/games/' + game.id, {
+                    joiner,
+                });
+                answer.gameid = game.id;
+                answer.message = 'GAME_UPDATE';
+                joined = true;
+            }
+
+            if (joiner.length === 4 && gogogoGamers.length === 0) {
+                answer.gameid = game.id;
+                answer.message = 'GAME_READY';
+            }
+            return game;
+        });
+    }
+    // create new game
+    // when no active game
+    // no free game, max 4 joiner
+    if (games.length === 0) {
+        const game = await db('POST', '/games', {
+            date: getTimestampNow(),
+            done: false,
+            joiner: [newjoiner],
+        });
+        answer.gameid = game.id;
+        answer.message = 'GAME_UPDATE';
+    }
+
+    console.log(answer);
+    return answer;
+}
+
+async function handleGoGoGo(clientId, gameId) {
+    console.log('handleGoGoGo', arguments);
+    const answer = {
+        gameid: -1,
+        message: '',
+    };
+
+    const game = await db('GET', '/games/' + gameId);
+    const joiner = game.joiner.map((joiner) => {
+        if (joiner.client_id === clientId) {
+            joiner.gogogo = true;
+        }
+        return joiner;
+    });
+    // update joiner
+    await db('PATCH', '/games/' + game.id, {
+        joiner,
+    });
+    const gogogoGamers = joiner.filter((gamer) => gamer.gogogo === true);
+    // send gogogo if all joiner are ready to go
+    if (joiner.length === 4 && gogogoGamers.length === 4) {
+        await db('PATCH', '/games/' + game.id, {
+            done: true,
+        });
+        answer.message = 'GAME_GOGOGO';
+        // answer with udate
+    } else {
+        answer.message = 'GAME_UPDATE';
+    }
+    answer.gameid = game.id;
+    console.log(answer);
+    return answer;
+}
+
 function initWSS() {
     console.log('initWSS')
-    if (wss !== null) {
-        clearInterval(interval);
-        interval = null;
-    }
 
     wss = new WebSocket.Server({ host, port });
 
-    wss.on('connection', (client) => {
-        // set id
-        client.id = client._socket._handle.fd;
-        console.log('on.connection')
-        client.isAlive = true;
+    wss.on('connection', (ws) => {
+        ws.id = ws._socket._handle.fd;
+        ws.isAlive = true;
+        console.log('wss.connection', ws.id);
 
-        client.on('message', (raw) => {
-            console.log('on.message', client.id, raw)
+        ws.on('message', async (raw) => {
+            console.log('on.message', ws.id, raw);
             const data = JSON.parse(raw);
-            let message = '';
-            let gameid = -1;
+            let answer;
             switch (data.message) {
-                // required: msg.nick
+                // required: data.nick
                 case 'PLUS_ONE':
-                    // - GET fetch active games
-                    // const game = db('GET', '/games')
-                    // # if running GAME -> return GAME_ID
-                    // gameid = game.id;
-                    // - PATCH /db/games/GAME_ID/joiner
-                    // const newjoiner = {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false};
-                    // await db('PATCH', '/games/'+ gameid, {joiner: [...game.joiner, newjoiner]});
-
-                    // if no running GAME
-                    //  POST /db/games -> get GAME_ID
-                    //  {date: getTimestampNow(), done: false, joiner: [
-                    //      {client_id: client.id, nick: data.nick, date: getTimestampNow(), gogogo: false}
-                    //  ]}
-
-                    message = 'GAME_UPDATE';
-                    gameid = 1;
-
-                    // if joiner.gogogo === false && .length === 4
-                    //    MESSAGE = 'GAME_READY';
+                    answer = await handlePlusOne(ws.id, data.nick);
                     break;
+                // required: data.gameid
                 case 'GOGOGO':
-                    // PATCH /db/games/GAME_ID/joiner/CLIENTID -> gogogo:true
-
-                    message = 'GAME_UPDATE';
-                    gameid = 1;
-
-                    // if joiner.gogogo === false && .length === 4
-                    //    MESSAGE = 'GAME_GOGOGO';
+                    answer = await handleGoGoGo(ws.id, data.gameid);
                     break;
             }
 
-            if (!!message) {
+            if (!!answer.message) {
                 // answer all clients
                 wss.clients.forEach((otherClient) => {
                     otherClient.send(JSON.stringify({
-                        message,
-                        gameid,
-                        clientid: otherClient.id,
+                        message: answer.message,
+                        gameid: answer.gameid,
+                        yourClientId: otherClient.id,
+                        triggeredThroughClient: ws.id,
                         date: getTimestampNow(),
                     }));
                 });
             }
         });
         // send connected
-        client.send(JSON.stringify({
+        ws.send(JSON.stringify({
             message: 'CONNECTION_ON',
             date: getTimestampNow(),
-            clientid: client.id,
+            clientid: ws.id,
         }));
 
-        // keep alive heartbeat
-        // interval = setInterval(function ping() {
-        //     wss.clients.forEach(function each(otherClient) {
-        //         if (client.isAlive === false) {
-        //             return otherClient.terminate();
-        //         }
-        //         otherClient.isAlive = false;
-        //         otherClient.ping(noop);
-        //     });
-        // }, 30000);
+        ws.on('pong', heartbeat);
+    });
 
-        wss.on('close', () => {
-            console.log('on.close')
-            //clearInterval(interval);
+    interval = setInterval(function ping() {
+        wss.clients.forEach(function each(ws) {
+            if (ws.isAlive === false) return ws.terminate();
+
+            ws.isAlive = false;
+            ws.ping(noop);
         });
+    }, 30000);
 
-        client.on('pong', heartbeat);
+    wss.on('close', () => {
+        console.log('wss.close')
+        clearInterval(interval);
     });
 }
 

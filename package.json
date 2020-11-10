@@ -5,7 +5,8 @@
   "dependencies": {
     "json-server": "^0.16.1",
     "command-line-args": "^5.1.1",
-    "ws": "^7.2.1"
+    "ws": "^7.2.1",
+    "node-fetch": "^2.6.0"
   },
   "scripts": {
     "npm:install": "npm install",
@@ -21,7 +22,7 @@
     "kickerws:stop": "supervisorctl stop kickerws",
     "kickerws:logs": "supervisorctl tail kickerws",
     "--process--": "this is a divider",
-    "process:running": "ps aux | grep kicker",
-    "process:kill": "kill -9 PID"
+    "pid": "ps aux | grep",
+    "pid:kill": "kill -9"
   }
 }
