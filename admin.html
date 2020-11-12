@@ -1,0 +1,95 @@
+<html>
+<head>
+    <title>Kicker Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css"/>
+    <link rel="stylesheet" href="interface/style.css"/>
+</head>
+<body center>
+<div class="joiner container">
+    <h1>Joiner</h1>
+    <input type="text" name="nick" placeholder="nickname"
+           value="willy"
+           onkeypress="(event.key.toLowerCase() === 'enter') ? callPlusOne() : null"/>
+    <button onclick="callPlusOne()" id="plusone">+1</button>
+</div>
+<div class="games container">
+    <h2>Games</h2>
+    <script>
+        const tplGame = (game, isGogogo) => {
+            return `
+                <div class="game">
+                    <table>
+                    <thead>
+                        <tr>
+                            <td colspan="4">
+                                #${game.id} / ${HRDate(game.date)}
+                            </td>
+                            <td center>
+                                <i onclick="deleteGame(${game.id})" class="far fa-trash-alt"></i>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Clnt</th>
+                            <th>Nick</th>
+                            <th>Date</th>
+                            <th>State</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${game.joiner.map((joiner) => {
+                return `
+                    <tr>
+                        <td>${joiner.client_id}</td>
+                        <td>${joiner.nick}</td>
+                        <td>${HRDate(joiner.date)}</td>
+                        <td center>${!joiner.gogogo
+                    ? (!isGogogo
+                        ? '+1'
+                        : `<button onclick="setGOGOGO('${joiner.nick}', ${game.id})">GOGOGO</button>`)
+                    : '<span class="gogogo">GOGOGO</span>'}</td>
+                        <td center>
+                            <i onclick="deleteJoiner('${joiner.nick}', ${game.id})" class="far fa-trash-alt"></i>
+                        </td>
+                    </tr>`
+            }).join('\n')}
+                    </tbody>
+                </table>
+            </div>
+        `;
+        }
+    </script>
+    <div class="templates"></div>
+</div>
+<div class="clients container">
+    <h2>Clients</h2>
+    <script>
+        const tplClient = (client) => {
+            return `
+                <tr>
+                    <td>${client.client_id}</td>
+                    <td>${client.nick}</td>
+                    <td>${HRDate(client.date)}</td>
+                </tr>`;
+        }
+    </script>
+    <table>
+        <thead>
+        <tr>
+            <th>Id</th>
+            <th>Nick</th>
+            <th>Lastseen</th>
+        </tr>
+        </thead>
+        <tbody class="templates">
+        </tbody>
+    </table>
+</div>
+
+
+<pre id="error" style="max-height:150px;overflow-y: scroll;"></pre>
+
+<script src="interface/api.js"></script>
+<script src="interface/admin.js"></script>
+</body>
+</html>

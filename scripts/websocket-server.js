@@ -49,6 +49,7 @@ async function handlePlusOne(clientId, nickName) {
     const newjoiner = { client_id: clientId, nick: nickName, date: getTimestampNow(), gogogo: false };
     // get only active games, newest first
     const games = await db('GET', '/games?done=false&_sort=date&_order=desc');
+    let noFreeGames = false;
     // # if running GAME -> return GAME_ID
     if (games.length !== 0) {
         let joined = false;
@@ -69,7 +70,7 @@ async function handlePlusOne(clientId, nickName) {
                 joined = true;
             }
 
-            if (joiner.length === 4 && gogogoGamers.length === 0) {
+            if (joiner && joiner.length === 4 && gogogoGamers.length === 0) {
                 answer.gameid = game.id;
                 answer.message = 'GAME_READY';
             }
@@ -127,6 +128,14 @@ async function handleGoGoGo(clientId, gameId) {
     return answer;
 }
 
+async function handleGameUpdate(clientId, data) {
+    console.log('handleGameUpdate', arguments);
+    const answer = {
+        ...data,
+    };
+    return answer;
+}
+
 function initWSS() {
     console.log('initWSS')
 
@@ -149,6 +158,9 @@ function initWSS() {
                 // required: data.gameid
                 case 'GOGOGO':
                     answer = await handleGoGoGo(ws.id, data.gameid);
+                    break;
+                case 'GAME_UPDATE':
+                    answer = await handleGameUpdate(ws.id, data);
                     break;
             }
 

@@ -1,0 +1,113 @@
+:root {
+    --clr-red: #CA0000;
+    --clr-red--contrast: #e70d0d;
+    --clr-white: #fff;
+    --clr-grey: #ccc;
+    --clr-light-grey: #e3e3e3;
+    --clr-black: #000;
+    --clr-green: #1fb813;
+
+    --border-radius: 4px;
+
+    --space-xs: 0px 2px;
+    --space-sm: 2px 4px;
+    --space-md: 4px 6px;
+    --space-lg: 6px 8px;
+    --space-xl: 8px 10px;
+
+    --ms--2: 8px;
+    --ms--1: 12px;
+    --ms-0: 16px;
+    --ms-1: 20px;
+    --ms-2: 30px;
+}
+
+body {
+    background: var(--clr-red);
+    color: var(--clr-white);
+    font-family: Verdana;
+    font-size: var(--ms-0);
+    padding: 0;
+    margin: 0;
+}
+
+[empty] {
+    font-size: var(--ms--1);
+}
+[center] {
+    text-align: center;
+}
+
+h1 {
+    font-size: var(--ms-2);
+    margin: 0;
+}
+
+h2 {
+    font-size: var(--ms-1);
+    margin: 0;
+}
+
+.container {
+    text-align: left;
+    padding: var(--space-lg)
+}
+
+table {
+    background: var(--clr-white);
+    color: var(--clr-black);
+    border-radius: var(--border-radius);
+    border-spacing: 0;
+    overflow: hidden;
+}
+
+table thead td {
+    background: var(--clr-grey);
+    font-weight: bold;
+}
+
+table thead th {
+    background: var(--clr-light-grey);
+    font-size: var(--ms--1);
+}
+
+table td,
+table th {
+    padding: var(--space-md);
+}
+
+table tbody tr:hover td {
+    background: var(--clr-light-grey);
+}
+
+table i {
+    cursor: pointer;
+}
+
+table i:hover {
+    color: var(--clr-red--contrast);
+}
+
+table button {
+    cursor: pointer;
+    background: var(--clr-red);
+    border: 0;
+    color: var(--clr-white);
+    padding: var(--space-md);
+    border-radius: var(--border-radius);
+    font-size: var(--ms-0);
+}
+
+table button:hover {
+    background: var(--clr-red--contrast);
+}
+
+table .gogogo {
+    color: var(--clr-green);
+    padding: var(--space-md);
+    display: inline-block;
+}
+
+.joiner {
+
+}
