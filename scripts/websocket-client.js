@@ -1,6 +1,6 @@
 const WebSocket = require("ws");
-const onlineApi = 'https://kij.willy-selma.de/db';
-const wsApi = 'wss://kij.willy-selma.de/ws';
+const onlineApi = 'https://kij.willy-selma.de/db2';
+const wsApi = 'wss://kij.willy-selma.de/ws2';
 
 let pingTimeout = null;
 let socket;

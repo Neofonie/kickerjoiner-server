@@ -25,7 +25,7 @@
     "--json storage--": "this is a divider",
     "kicker": "sh ./scripts/start-json.sh kicker --port=61235",
     "kicker2": "sh ./scripts/start-json.sh kicker2 --port=61236",
-    "kickerws": "node ./scripts/websocket-server.js --port=61237 kickerws",
-    "kickerws2": "node ./scripts/websocket-server.js --port=61238 --db=2 kickerws2"
+    "kickerws": "node ./scripts/websocket-server.js --port=61237 --type=kickerws",
+    "kickerws2": "node ./scripts/websocket-server.js --port=61238 --db=2 --type=kickerws2"
   }
 }

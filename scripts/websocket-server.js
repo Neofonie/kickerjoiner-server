@@ -2,6 +2,7 @@ const WebSocket = require("ws");
 const fetch = require('node-fetch');
 const commandLineArgs = require('command-line-args')
 const options = commandLineArgs([
+    { name: 'type', alias: 't', type: String },
     { name: 'port', alias: 'p', type: Number },
     { name: 'db', alias: 'd', type: Number },
 ]);
