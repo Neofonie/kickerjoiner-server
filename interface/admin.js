@@ -80,6 +80,7 @@ async function getGames() {
 async function setClients(clients) {
     const $clients = document.querySelector('.clients .templates');
     $clients.innerHTML = '';
+    console.log(clients)
     if (!clients || clients.length === 0) {
         $clients.innerHTML = '<tr><td colspan="100" empty center>No Clients available.</td></tr>';
     } else {

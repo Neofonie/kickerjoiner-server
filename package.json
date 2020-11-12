@@ -23,9 +23,9 @@
     "svc:remove": "sh ./scripts/handle-service.sh remove",
     "bknd:list": "echo 'uberspace web backend set kij.willy-selma.de/db --http --port 61235 --remove-prefix\n' && sh ./scripts/shell-cmd.sh uberspace web backend list",
     "--json storage--": "this is a divider",
-    "kicker": "sh ./scripts/start-json.sh kicker --port=61235",
+    "kicker": "sh ./scripts/start-json.sh kicker1 --port=61235",
     "kicker2": "sh ./scripts/start-json.sh kicker2 --port=61236",
-    "kickerws": "node ./scripts/websocket-server.js --port=61237 --type=kickerws",
+    "kickerws": "node ./scripts/websocket-server.js --port=61237 --type=kickerws1",
     "kickerws2": "node ./scripts/websocket-server.js --port=61238 --db=2 --type=kickerws2"
   }
 }

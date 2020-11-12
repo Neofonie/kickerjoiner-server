@@ -177,11 +177,21 @@ function initWSS() {
                 });
             }
         });
+        const clients = [];
+        wss.clients.forEach(function each(ws, index) {
+            console.log(index);
+            console.log(ws);
+            clients.push({
+                id: ws.id,
+                isAlive: ws.isAlive,
+            })
+        })
         // send connected
         ws.send(JSON.stringify({
             message: 'CONNECTION_ON',
             date: getTimestampNow(),
             clientid: ws.id,
+            clients,
         }));
 
         ws.on('pong', heartbeat);
