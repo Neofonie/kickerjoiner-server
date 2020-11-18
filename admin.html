@@ -11,7 +11,6 @@
         - 5th player create new game
         - more clients data + inactive cleanup
         - after all gogogo show running game for next hour
-        - add player id
     </pre>
     <h1>Joiner</h1>
     <input type="text" name="nick" placeholder="nickname"
@@ -28,7 +27,7 @@
                     <table>
                     <thead>
                         <tr>
-                            <td colspan="4">
+                            <td colspan="5">
                                 #${game.id} / ${HRDate(game.date)}
                             </td>
                             <td center>
@@ -36,7 +35,8 @@
                             </td>
                         </tr>
                         <tr>
-                            <th>Clnt</th>
+                            <th>ID</th>
+                            <th>CID</th>
                             <th>Nick</th>
                             <th>Date</th>
                             <th>State</th>
@@ -47,16 +47,17 @@
                         ${game.joiner.map((joiner) => {
                 return `
                     <tr>
+                        <td>${joiner.id}</td>
                         <td>${joiner.client_id}</td>
                         <td>${joiner.nick}</td>
                         <td>${HRDate(joiner.date)}</td>
                         <td center>${!joiner.gogogo
                     ? (!isGogogo
                         ? '+1'
-                        : `<button onclick="setGOGOGO('${joiner.nick}', ${game.id})">GOGOGO</button>`)
+                        : `<button onclick="setGOGOGO(${joiner.id}, ${game.id})">GOGOGO</button>`)
                     : '<span class="gogogo">GOGOGO</span>'}</td>
                         <td center>
-                            <i onclick="deleteJoiner('${joiner.nick}', ${game.id})" class="far fa-trash-alt"></i>
+                            <i onclick="deleteJoiner(${joiner.id}, ${game.id})" class="far fa-trash-alt"></i>
                         </td>
                     </tr>`
             }).join('\n')}

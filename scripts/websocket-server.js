@@ -6,7 +6,7 @@ const options = commandLineArgs([
     { name: 'port', alias: 'p', type: Number },
     { name: 'db', alias: 'd', type: Number },
 ]);
-
+const maxJoiner = 4;
 const port = options.port;
 const dbNr = options.db || '';
 const host = '0.0.0.0';
@@ -16,7 +16,8 @@ console.log('hi there kickerjoiner websocket', host, port, onlineApi);
 let wss = null;
 let interval = null;
 
-function noop() {}
+function noop() {
+}
 
 function heartbeat() {
     this.isAlive = true;
@@ -37,6 +38,14 @@ async function db(method, url, data) {
     }).then((res) => res.json());
 }
 
+const createNewGame = async (newjoiner) => {
+    return await db('POST', '/games', {
+        date: getTimestampNow(),
+        done: false,
+        joiner: [newjoiner],
+    });
+}
+
 async function handlePlusOne(clientId, nickName) {
     console.log('handlePlusOne', arguments);
 
@@ -46,7 +55,7 @@ async function handlePlusOne(clientId, nickName) {
     };
 
     // - GET fetch active games
-    const newjoiner = { client_id: clientId, nick: nickName, date: getTimestampNow(), gogogo: false };
+    let newjoiner = { id: 1, client_id: clientId, nick: nickName, date: getTimestampNow(), gogogo: false };
     // get only active games, newest first
     const games = await db('GET', '/games?done=false&_sort=date&_order=desc');
     let noFreeGames = false;
@@ -56,8 +65,11 @@ async function handlePlusOne(clientId, nickName) {
         games.map((game) => {
             const gogogoGamers = game.joiner.filter((gamer) => gamer.gogogo === true);
             let joiner;
-            // join the game
-            if (game.joiner.length < 4 && !joined) {
+            // join the game via +1
+            if (game.joiner.length < maxJoiner && !joined) {
+                // add unique id
+                newjoiner.id = game.joiner.length + 1;
+                // merge them together
                 joiner = [
                     ...game.joiner,
                     newjoiner,
@@ -69,10 +81,12 @@ async function handlePlusOne(clientId, nickName) {
                 answer.message = 'GAME_UPDATE';
                 joined = true;
             }
-
-            if (joiner && joiner.length === 4 && gogogoGamers.length === 0) {
+            // all joiner set +1
+            if (joiner && joiner.length === maxJoiner && gogogoGamers.length === 0) {
                 answer.gameid = game.id;
                 answer.message = 'GAME_READY';
+            } else {
+                noFreeGames = true;
             }
             return game;
         });
@@ -80,12 +94,8 @@ async function handlePlusOne(clientId, nickName) {
     // create new game
     // when no active game
     // no free game, max 4 joiner
-    if (games.length === 0) {
-        const game = await db('POST', '/games', {
-            date: getTimestampNow(),
-            done: false,
-            joiner: [newjoiner],
-        });
+    if (games.length === 0 || noFreeGames) {
+        const game = await createNewGame(newjoiner);
         answer.gameid = game.id;
         answer.message = 'GAME_UPDATE';
     }
@@ -177,30 +187,29 @@ function initWSS() {
                 });
             }
         });
-        const clients = [];
-        wss.clients.forEach(function each(ws, index) {
-            console.log(index);
-            console.log(ws);
-            clients.push({
-                id: ws.id,
-                isAlive: ws.isAlive,
-            })
-        })
+        // const clients = [];
+        // wss.clients.forEach((ws, index) => {
+        //     clients.push({
+        //         id: ws.id,
+        //         isAlive: ws.isAlive,
+        //     });
+        // });
         // send connected
         ws.send(JSON.stringify({
             message: 'CONNECTION_ON',
             date: getTimestampNow(),
             clientid: ws.id,
-            clients,
+            //clients,
         }));
 
         ws.on('pong', heartbeat);
     });
 
-    interval = setInterval(function ping() {
-        wss.clients.forEach(function each(ws) {
-            if (ws.isAlive === false) return ws.terminate();
-
+    interval = setInterval(() => {
+        wss.clients.forEach((ws) => {
+            if (ws.isAlive === false) {
+                return ws.terminate();
+            }
             ws.isAlive = false;
             ws.ping(noop);
         });

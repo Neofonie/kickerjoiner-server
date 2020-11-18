@@ -9,11 +9,17 @@
 
     --border-radius: 4px;
 
-    --space-xs: 0px 2px;
-    --space-sm: 2px 4px;
-    --space-md: 4px 6px;
-    --space-lg: 6px 8px;
-    --space-xl: 8px 10px;
+    --space-xs: 2px;
+    --space-sm: 4px;
+    --space-md: 6px;
+    --space-lg: 8px;
+    --space-xl: 10px;
+
+    --space-a-xs: 0px 2px;
+    --space-a-sm: 2px 4px;
+    --space-a-md: 4px 6px;
+    --space-a-lg: 6px 8px;
+    --space-a-xl: 8px 10px;
 
     --ms--2: 8px;
     --ms--1: 12px;
@@ -50,10 +56,16 @@ h2 {
 
 .container {
     text-align: left;
-    padding: var(--space-lg)
+    padding: var(--space-a-lg);
+    width: 500px;
+}
+
+.game {
+    margin-bottom: var(--space-lg);
 }
 
 table {
+    width: 100%;
     background: var(--clr-white);
     color: var(--clr-black);
     border-radius: var(--border-radius);
@@ -73,7 +85,7 @@ table thead th {
 
 table td,
 table th {
-    padding: var(--space-md);
+    padding: var(--space-a-md);
 }
 
 table tbody tr:hover td {
@@ -93,7 +105,7 @@ table button {
     background: var(--clr-red);
     border: 0;
     color: var(--clr-white);
-    padding: var(--space-md);
+    padding: var(--space-a-md);
     border-radius: var(--border-radius);
     font-size: var(--ms-0);
 }
@@ -104,7 +116,7 @@ table button:hover {
 
 table .gogogo {
     color: var(--clr-green);
-    padding: var(--space-md);
+    padding: var(--space-a-md);
     display: inline-block;
 }
 

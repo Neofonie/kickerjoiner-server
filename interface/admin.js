@@ -3,11 +3,11 @@ let settings;
 function HRDate(timestamp) {
     const a = new Date(timestamp * 1000);
     const year = a.getFullYear();
-    const monthRaw = a.getMonth();
-    const day = a.getDate();
-    const hour = a.getHours();
-    const min = a.getMinutes();
-    return `${day}.${monthRaw + 1}.${year} ${hour}:${min}`;
+    const month = (a.getMonth() + 1).toString().padStart(2, '0');
+    const day = a.getDate().toString().padStart(2, '0');
+    const hour = a.getHours().toString().padStart(2, '0');
+    const min = a.getMinutes().toString().padStart(2, '0');
+    return `${day}.${month}.${year} ${hour}:${min}`;
 }
 
 async function deleteGame(gameID) {
@@ -20,9 +20,9 @@ async function deleteGame(gameID) {
     });
 }
 
-async function deleteJoiner(nickname, gameID) {
+async function deleteJoiner(joinerID, gameID) {
     const game = await db('GET', '/games/' + gameID);
-    const filteredJoiner = game.joiner.filter((player) => (player.nick !== nickname));
+    const filteredJoiner = game.joiner.filter((player) => (player.id !== joinerID));
     await db('PATCH', '/games/' + gameID, {
         joiner: filteredJoiner,
     });
@@ -30,15 +30,15 @@ async function deleteJoiner(nickname, gameID) {
     sendMessage({
         message: 'GAME_UPDATE',
         gameid: gameID,
-        joinerid: nickname,
+        joinerid: joinerID,
         reason: 'delete joiner',
     });
 }
 
-async function setGOGOGO(nickname, gameID) {
+async function setGOGOGO(joinerID, gameID) {
     const game = await db('GET', '/games/' + gameID);
     const gogogoPlayer = game.joiner.map((player) => {
-        if (player.nick === nickname) {
+        if (player.id === joinerID) {
             player.gogogo = true;
         }
         return player;
@@ -50,6 +50,7 @@ async function setGOGOGO(nickname, gameID) {
     sendMessage({
         message: 'GAME_UPDATE',
         gameid: gameID,
+        joinerid: joinerID,
         reason: 'gogogo joiner',
     });
 }
@@ -100,10 +101,15 @@ async function init() {
         console.log('connectToWSS refresh', data)
         switch (data.message) {
             case 'CONNECTION_ON': // connection with server is on
-                setClients(data.clients);
+                if (data.clients) {
+                    setClients(data.clients);
+                }
                 break;
             case 'GAME_UPDATE': // joined game got an update
                 getGames();
+                if (data.clients) {
+                    setClients(data.clients);
+                }
                 break;
             case 'GAME_READY': // four joiners in one game
                 getGames();
