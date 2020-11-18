@@ -78,17 +78,19 @@ async function getGames() {
     }
 }
 
-async function setClients(clients) {
-    const $clients = document.querySelector('.clients .templates');
-    $clients.innerHTML = '';
-    console.log(clients)
-    if (!clients || clients.length === 0) {
-        $clients.innerHTML = '<tr><td colspan="100" empty center>No Clients available.</td></tr>';
-    } else {
-        clients.map((client) => {
-            const html = tplClient(client);
-            $clients.innerHTML += html;
-        });
+async function updateClients(clients) {
+    if (clients) {
+        console.log(clients);
+        const $clients = document.querySelector('.clients .templates');
+        $clients.innerHTML = '';
+        if (!clients || clients.length === 0) {
+            $clients.innerHTML = '<tr><td colspan="100" empty center>No Clients available.</td></tr>';
+        } else {
+            clients.map((client) => {
+                const html = tplClient(client);
+                $clients.innerHTML += html;
+            });
+        }
     }
 }
 
@@ -101,15 +103,11 @@ async function init() {
         console.log('connectToWSS refresh', data)
         switch (data.message) {
             case 'CONNECTION_ON': // connection with server is on
-                if (data.clients) {
-                    setClients(data.clients);
-                }
+                updateClients(data.clients);
                 break;
             case 'GAME_UPDATE': // joined game got an update
                 getGames();
-                if (data.clients) {
-                    setClients(data.clients);
-                }
+                updateClients(data.clients);
                 break;
             case 'GAME_READY': // four joiners in one game
                 getGames();
