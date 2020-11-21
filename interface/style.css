@@ -57,6 +57,20 @@ h2 {
     margin: 0;
 }
 
+.mb-xs {
+    margin-bottom: var(--space-xs);
+}
+
+.mb-sm {
+    margin-bottom: var(--space-sm);
+}
+.ms-0 {
+    font-size: var(--ms-0);
+}
+.ms--1 {
+    font-size: var(--ms--1);
+}
+
 .container {
     text-align: left;
     padding: var(--space-a-lg);
@@ -158,4 +172,19 @@ table .gogogo {
     color: var(--clr-green);
     padding: var(--space-a-md);
     display: inline-block;
+}
+
+.clients .online,
+.clients .offline {
+    display: inline-block;
+    border-radius: var(--border-radius);
+    background: green;
+    width: 8px;
+    height: 8px;
+    position: relative;
+    top: -1px;
+}
+
+.clients .offline {
+    background: red;
 }

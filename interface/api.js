@@ -48,6 +48,11 @@ function connectToWSS(updateCallback) {
         clearTimeout(pingTimeout);
         updateCallback({ message: 'CLOSE', error: e });
     };
+    window.onbeforeunload = () => {
+        socket.onclose = () => {
+        }; // disable onclose handler first
+        socket.close();
+    };
 }
 
 async function db(method, url, data) {
@@ -66,4 +71,25 @@ function callPlusOne() {
         message: 'PLUS_ONE',
         nick: nickname || 'anonymous',
     });
+}
+
+function sendClientNick(nickname) {
+    nickname = nickname || document.querySelector('.clients input[name=clientnick]').value;
+    /*
+     parsedResult: {
+         browser: {name: "Chrome", version: "87.0.4280.66"}
+         engine: {name: "Blink"}
+         os: {name: "Windows", version: "NT 10.0", versionName: "10"}
+         platform: {type: "desktop"}
+     }
+    */
+    const browser = window.bowser.getParser(window.navigator.userAgent);
+    if (nickname) {
+        localStorage.setItem('nickname', nickname);
+        sendMessage({
+            message: 'SET_CLIENTNICK',
+            type: ['admin', browser.parsedResult.os.name, browser.parsedResult.platform.type, browser.parsedResult.browser.name].join(' / '),
+            nick: nickname,
+        });
+    }
 }

@@ -6,13 +6,9 @@
 </head>
 <body center>
 <div class="joiner container">
-    <pre>
-        Todos:
-        - more clients data + inactive cleanup
-    </pre>
     <h1>Joiner</h1>
     <input type="text" name="nick" placeholder="nickname"
-           value="willy"
+           value=""
            onkeypress="(event.key.toLowerCase() === 'enter') ? callPlusOne() : null"/>
     <button onclick="callPlusOne()" id="plusone">+1</button>
 </div>
@@ -75,13 +71,19 @@
 </div>
 <div class="clients container">
     <h2>Clients</h2>
+    <div class="mb-sm">
+        <input type="text" name="clientnick" placeholder="anonymous"
+               value=""
+               onkeypress="(event.key.toLowerCase() === 'enter') ? sendClientNick() : null"/>
+        <button onclick="toLowerCase()">Set your clientname</button>
+    </div>
     <script>
         const tplClient = (client) => {
             return `
                 <tr>
                     <td>${client.id}</td>
-                    <td>${client.isAlive}</td>
-                    <td>---</td>
+                    <td>${client.nick}${client.isThisYou ? ' (You)' : ''}<br /><span class="ms--1">${client.type}</span></td>
+                    <td>${HRDate(client.lastseendate)}</td>
                 </tr>`;
         }
     </script>
@@ -98,9 +100,9 @@
     </table>
 </div>
 
-
 <pre id="error" style="max-height:150px;overflow-y: scroll;"></pre>
 
+<script src="https://cdn.jsdelivr.net/npm/bowser@2.10.0/es5.min.js"></script>
 <script src="interface/api.js"></script>
 <script src="interface/admin.js"></script>
 </body>

@@ -153,15 +153,42 @@ async function handleGameUpdate(joinerId, data) {
     return answer;
 }
 
+function callAllClients(answer, triggerWsId) {
+    wss.clients.forEach((ws) => {
+        ws.send(JSON.stringify({
+            ...answer,
+            yourClientId: ws.id,
+            triggeredThroughClient: triggerWsId,
+            date: getTimestampNow(),
+        }));
+    });
+}
+
+function getAllClients() {
+    const clients = [];
+    wss.clients.forEach((ws, index) => {
+        clients.push({
+            id: ws.id,
+            isAlive: ws.isAlive,
+            nick: ws.nick,
+            type: ws.type,
+            lastseendate: ws.closedate || ws.connectiondate,
+        });
+    });
+    return clients;
+}
+
 function initWSS() {
     console.log('initWSS')
 
     wss = new WebSocket.Server({ host, port });
 
     wss.on('connection', (ws) => {
+        ws.nick = 'anonymous';
+        ws.type = 'unknown';
         ws.id = ws._socket._handle.fd;
         ws.isAlive = true;
-        ws.date = getTimestampNow();
+        ws.connectiondate = getTimestampNow();
         console.log('wss.connection', ws.id);
 
         ws.on('message', async (raw) => {
@@ -178,41 +205,52 @@ function initWSS() {
                 case 'GAME_UPDATE':
                     answer = await handleGameUpdate(ws.id, data);
                     break;
+                case 'SET_CLIENTNICK':
+                    if (data.nick) {
+                        ws.nick = data.nick;
+                    }
+                    if (data.type) {
+                        ws.type = data.type;
+                    }
+                    answer = {
+                        message: 'CLIENT_UPDATE',
+                        clients: getAllClients(),
+                    }
+                    break;
             }
 
             if (answer.message !== '') {
                 // answer all clients
-                wss.clients.forEach((otherClient) => {
-                    otherClient.send(JSON.stringify({
-                        ...answer,
-                        yourClientId: otherClient.id,
-                        triggeredThroughClient: ws.id,
-                        date: getTimestampNow(),
-                    }));
-                });
+                callAllClients(answer, ws.id);
             }
         });
-        // const clients = [];
-        // wss.clients.forEach((ws, index) => {
-        //     clients.push({
-        //         id: ws.id,
-        //         isAlive: ws.isAlive,
-        //     });
-        // });
         // send connected
         ws.send(JSON.stringify({
             message: 'CONNECTION_ON',
             date: getTimestampNow(),
             clientid: ws.id,
-            //clients,
         }));
 
+        callAllClients({
+            message: 'CLIENT_UPDATE',
+            clients: getAllClients(),
+        }, ws.id);
+
         ws.on('pong', heartbeat);
+
+        ws.on('close', () => {
+            ws.isAlive = false;
+            ws.closedate = getTimestampNow();
+
+            callAllClients({
+                message: 'CLIENT_UPDATE',
+                clients: getAllClients(),
+            }, ws.id);
+        })
     });
 
     interval = setInterval(() => {
         wss.clients.forEach((ws) => {
-            ws.date = getTimestampNow();
             if (ws.isAlive === false) {
                 return ws.terminate();
             }

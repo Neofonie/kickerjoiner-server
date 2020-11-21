@@ -1,4 +1,5 @@
 let settings;
+let myClientId = -1;
 
 function HRDate(timestamp) {
     const a = new Date(timestamp * 1000);
@@ -72,13 +73,13 @@ async function getGames() {
 
 async function updateClients(clients) {
     if (clients) {
-        console.log(clients);
         const $clients = document.querySelector('.clients .templates');
         $clients.innerHTML = '';
         if (!clients || clients.length === 0) {
             $clients.innerHTML = '<tr><td colspan="100" empty center>No Clients available.</td></tr>';
         } else {
             clients.map((client) => {
+                client.isThisYou = client.id === myClientId;
                 const html = tplClient(client);
                 $clients.innerHTML += html;
             });
@@ -87,7 +88,6 @@ async function updateClients(clients) {
 }
 
 async function init() {
-
     await getSettings();
     await getGames();
 
@@ -95,17 +95,25 @@ async function init() {
         console.log('connectToWSS refresh', data)
         switch (data.message) {
             case 'CONNECTION_ON': // connection with server is on
-                updateClients(data.clients);
+                myClientId = data.clientid;
+                const lsNickName = localStorage.getItem('nickname');
+                if (lsNickName !== null) {
+                    document.querySelector('.clients input[name=clientnick]').value = lsNickName;
+                    document.querySelector('.joiner input[name=nick]').value = lsNickName;
+                    sendClientNick(lsNickName);
+                }
                 break;
             case 'GAME_UPDATE': // joined game got an update
                 getGames();
-                updateClients(data.clients);
                 break;
             case 'GAME_READY': // four joiners in one game
                 getGames();
                 break;
             case 'GAME_GOGOGO': // all four joiners pressed gogogo in one game
                 getGames();
+                break;
+            case 'CLIENT_UPDATE':
+                updateClients(data.clients);
                 break;
             case 'ERROR':
                 document.querySelector('#error').innerHTML = JSON.stringify(data, null, 2);
