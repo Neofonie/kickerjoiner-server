@@ -8,9 +8,7 @@
 <div class="joiner container">
     <pre>
         Todos:
-        - 5th player create new game
         - more clients data + inactive cleanup
-        - after all gogogo show running game for next hour
     </pre>
     <h1>Joiner</h1>
     <input type="text" name="nick" placeholder="nickname"
@@ -21,9 +19,15 @@
 <div class="games container">
     <h2>Games</h2>
     <script>
-        const tplGame = (game, isGogogo) => {
+        const tplGame = (game, settings) => {
+            let showGogogoButtons = false;
+            if (game.joiner.length === settings.maxjoiner) {
+                showGogogoButtons = true;
+            }
+
             return `
-                <div class="game">
+                <div class="game${game.done ? ' is-done' : ''}">
+                    ${game.done ? `<div class="done-layer" label="GOGOGO" date="${HRDate(game.donedate)}"></div>` : ''}
                     <table>
                     <thead>
                         <tr>
@@ -31,15 +35,15 @@
                                 #${game.id} / ${HRDate(game.date)}
                             </td>
                             <td center>
-                                <i onclick="deleteGame(${game.id})" class="far fa-trash-alt"></i>
+                                <i onclick="deleteGame(${game.id})" class="game-delete far fa-trash-alt"></i>
                             </td>
                         </tr>
                         <tr>
                             <th>ID</th>
                             <th>CID</th>
                             <th>Nick</th>
-                            <th>Date</th>
-                            <th>State</th>
+                            <th center>Date</th>
+                            <th center width="100">State</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -48,14 +52,14 @@
                 return `
                     <tr>
                         <td>${joiner.id}</td>
-                        <td>${joiner.client_id}</td>
+                        <td>${joiner.clientid}</td>
                         <td>${joiner.nick}</td>
-                        <td>${HRDate(joiner.date)}</td>
+                        <td center>${HRDate(joiner.date)}</td>
                         <td center>${!joiner.gogogo
-                    ? (!isGogogo
-                        ? '+1'
-                        : `<button onclick="setGOGOGO(${joiner.id}, ${game.id})">GOGOGO</button>`)
-                    : '<span class="gogogo">GOGOGO</span>'}</td>
+                        ? (!showGogogoButtons
+                            ? '+1'
+                            : `<button onclick="setGOGOGO(${joiner.id}, ${game.id})">GOGOGO</button>`)
+                        : '<span class="gogogo">GOGOGO</span>'}</td>
                         <td center>
                             <i onclick="deleteJoiner(${joiner.id}, ${game.id})" class="far fa-trash-alt"></i>
                         </td>

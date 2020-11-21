@@ -26,6 +26,9 @@
     --ms-0: 16px;
     --ms-1: 20px;
     --ms-2: 30px;
+
+    --z-overlay: 10;
+    --z-click: 11;
 }
 
 body {
@@ -61,7 +64,43 @@ h2 {
 }
 
 .game {
+    position: relative;
     margin-bottom: var(--space-lg);
+}
+
+.game .done-layer {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,.3);
+    z-index: var(--z-overlay);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--border-radius);
+    text-shadow: 2px 2px #ff0000;
+    font-weight: bold;
+}
+.game .done-layer:before {
+    content: attr(label);
+    transform: rotate(-33deg) translate(0, -5px);
+    font-size: var(--ms-2);
+}
+.game .done-layer:after {
+    content: attr(date);
+    transform: rotate(-33deg) translate(15px, -10px);
+    font-size: var(--ms-0);
+}
+.game.is-done .game-delete {
+    z-index: var(--z-click);
+    position: relative;
+    color: var(--clr-white);
+    text-shadow: 2px 2px #ff0000;
+}
+.game.is-done .game-delete:hover {
+    color: inherit;
+    text-shadow: none;
 }
 
 table {
@@ -79,6 +118,7 @@ table thead td {
 }
 
 table thead th {
+    text-align: left;
     background: var(--clr-light-grey);
     font-size: var(--ms--1);
 }
@@ -118,8 +158,4 @@ table .gogogo {
     color: var(--clr-green);
     padding: var(--space-a-md);
     display: inline-block;
-}
-
-.joiner {
-
 }

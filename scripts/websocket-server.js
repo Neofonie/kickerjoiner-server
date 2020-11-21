@@ -42,6 +42,7 @@ const createNewGame = async (newjoiner) => {
     return await db('POST', '/games', {
         date: getTimestampNow(),
         done: false,
+        donedate: 0,
         joiner: [newjoiner],
     });
 }
@@ -55,20 +56,21 @@ async function handlePlusOne(clientId, nickName) {
     };
 
     // - GET fetch active games
-    let newjoiner = { id: 1, client_id: clientId, nick: nickName, date: getTimestampNow(), gogogo: false };
+    let newjoiner = { id: 1, clientid: clientId, nick: nickName, date: getTimestampNow(), gogogo: false };
     // get only active games, newest first
     const games = await db('GET', '/games?done=false&_sort=date&_order=desc');
     let noFreeGames = false;
     // # if running GAME -> return GAME_ID
     if (games.length !== 0) {
         let joined = false;
+        let freeGames = 0;
         games.map((game) => {
             const gogogoGamers = game.joiner.filter((gamer) => gamer.gogogo === true);
             let joiner;
             // join the game via +1
             if (game.joiner.length < maxJoiner && !joined) {
                 // add unique id
-                newjoiner.id = game.joiner.length + 1;
+                newjoiner.id = game.joiner[game.joiner.length - 1].id + 1;
                 // merge them together
                 joiner = [
                     ...game.joiner,
@@ -85,11 +87,17 @@ async function handlePlusOne(clientId, nickName) {
             if (joiner && joiner.length === maxJoiner && gogogoGamers.length === 0) {
                 answer.gameid = game.id;
                 answer.message = 'GAME_READY';
-            } else {
-                noFreeGames = true;
+            }
+
+            if (game.joiner.length < maxJoiner) {
+                freeGames++;
             }
             return game;
         });
+
+        if (freeGames === 0) {
+            noFreeGames = true;
+        }
     }
     // create new game
     // when no active game
@@ -104,7 +112,7 @@ async function handlePlusOne(clientId, nickName) {
     return answer;
 }
 
-async function handleGoGoGo(clientId, gameId) {
+async function handleGoGoGo(joinerId, gameId) {
     console.log('handleGoGoGo', arguments);
     const answer = {
         gameid: -1,
@@ -113,7 +121,7 @@ async function handleGoGoGo(clientId, gameId) {
 
     const game = await db('GET', '/games/' + gameId);
     const joiner = game.joiner.map((joiner) => {
-        if (joiner.client_id === clientId) {
+        if (joiner.id === joinerId) {
             joiner.gogogo = true;
         }
         return joiner;
@@ -124,21 +132,20 @@ async function handleGoGoGo(clientId, gameId) {
     });
     const gogogoGamers = joiner.filter((gamer) => gamer.gogogo === true);
     // send gogogo if all joiner are ready to go
-    if (joiner.length === 4 && gogogoGamers.length === 4) {
+    if (joiner.length === maxJoiner && gogogoGamers.length === maxJoiner) {
         await db('PATCH', '/games/' + game.id, {
             done: true,
+            donedate: getTimestampNow(),
         });
         answer.message = 'GAME_GOGOGO';
-        // answer with udate
     } else {
         answer.message = 'GAME_UPDATE';
     }
     answer.gameid = game.id;
-    console.log(answer);
     return answer;
 }
 
-async function handleGameUpdate(clientId, data) {
+async function handleGameUpdate(joinerId, data) {
     console.log('handleGameUpdate', arguments);
     const answer = {
         ...data,
@@ -154,6 +161,7 @@ function initWSS() {
     wss.on('connection', (ws) => {
         ws.id = ws._socket._handle.fd;
         ws.isAlive = true;
+        ws.date = getTimestampNow();
         console.log('wss.connection', ws.id);
 
         ws.on('message', async (raw) => {
@@ -161,25 +169,22 @@ function initWSS() {
             const data = JSON.parse(raw);
             let answer;
             switch (data.message) {
-                // required: data.nick
                 case 'PLUS_ONE':
                     answer = await handlePlusOne(ws.id, data.nick);
                     break;
-                // required: data.gameid
                 case 'GOGOGO':
-                    answer = await handleGoGoGo(ws.id, data.gameid);
+                    answer = await handleGoGoGo(data.joinerid, data.gameid);
                     break;
                 case 'GAME_UPDATE':
                     answer = await handleGameUpdate(ws.id, data);
                     break;
             }
 
-            if (!!answer.message) {
+            if (answer.message !== '') {
                 // answer all clients
                 wss.clients.forEach((otherClient) => {
                     otherClient.send(JSON.stringify({
-                        message: answer.message,
-                        gameid: answer.gameid,
+                        ...answer,
                         yourClientId: otherClient.id,
                         triggeredThroughClient: ws.id,
                         date: getTimestampNow(),
@@ -207,6 +212,7 @@ function initWSS() {
 
     interval = setInterval(() => {
         wss.clients.forEach((ws) => {
+            ws.date = getTimestampNow();
             if (ws.isAlive === false) {
                 return ws.terminate();
             }

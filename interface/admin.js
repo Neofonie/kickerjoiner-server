@@ -10,6 +10,10 @@ function HRDate(timestamp) {
     return `${day}.${month}.${year} ${hour}:${min}`;
 }
 
+function getTimestampNow() {
+    return Math.floor(Date.now() / 1000);
+}
+
 async function deleteGame(gameID) {
     await db('DELETE', '/games/' + gameID);
 
@@ -36,22 +40,10 @@ async function deleteJoiner(joinerID, gameID) {
 }
 
 async function setGOGOGO(joinerID, gameID) {
-    const game = await db('GET', '/games/' + gameID);
-    const gogogoPlayer = game.joiner.map((player) => {
-        if (player.id === joinerID) {
-            player.gogogo = true;
-        }
-        return player;
-    });
-    await db('PATCH', '/games/' + gameID, {
-        joiner: gogogoPlayer,
-    });
-
     sendMessage({
-        message: 'GAME_UPDATE',
+        message: 'GOGOGO',
         gameid: gameID,
         joinerid: joinerID,
-        reason: 'gogogo joiner',
     });
 }
 
@@ -60,7 +52,11 @@ async function getSettings() {
 }
 
 async function getGames() {
-    const games = await db('GET', '/games?done=false&_sort=date&_order=desc');
+    // donedate = 0 // no gogogo happens
+    // donedate = 1605959577 // gogogo happens
+    //const showLastHourGames = getTimestampNow() - 3600; // 3600 = 1h in sec
+    //const games = await db('GET', `/games?donedate_gte=${showLastHourGames}&_sort=date&_order=desc`);
+    const games = await db('GET', `/games?_sort=date&_order=desc`);
     const $games = document.querySelector('.games .templates');
     // reset
     $games.innerHTML = '';
@@ -68,11 +64,7 @@ async function getGames() {
         $games.innerHTML = '<span empty>No Games available. Join one!</spanempty>';
     } else {
         games.map((game) => {
-            let isGogogo = false;
-            if (game.joiner.length === settings.maxjoiner) {
-                isGogogo = true;
-            }
-            const html = tplGame(game, isGogogo);
+            const html = tplGame(game, settings);
             $games.innerHTML += html;
         });
     }
@@ -112,7 +104,8 @@ async function init() {
             case 'GAME_READY': // four joiners in one game
                 getGames();
                 break;
-            case 'GAME_GOGOGO': // all four joiners pressed gogog in one game
+            case 'GAME_GOGOGO': // all four joiners pressed gogogo in one game
+                getGames();
                 break;
             case 'ERROR':
                 document.querySelector('#error').innerHTML = JSON.stringify(data, null, 2);
