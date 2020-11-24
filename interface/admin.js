@@ -11,10 +11,6 @@ function HRDate(timestamp) {
     return `${day}.${month}.${year} ${hour}:${min}`;
 }
 
-function getTimestampNow() {
-    return Math.floor(Date.now() / 1000);
-}
-
 async function deleteGame(gameID) {
     await db('DELETE', '/games/' + gameID);
 
@@ -55,7 +51,7 @@ async function getSettings() {
 async function getGames() {
     // donedate = 0 // no gogogo happens
     // donedate = 1605959577 // gogogo happens
-    //const showLastHourGames = getTimestampNow() - 3600; // 3600 = 1h in sec
+    //const showLastHourGames = Math.floor(Date.now() / 1000) - 3600; // 3600 = 1h in sec
     //const games = await db('GET', `/games?donedate_gte=${showLastHourGames}&_sort=date&_order=desc`);
     const games = await db('GET', `/games?_sort=date&_order=desc`);
     const $games = document.querySelector('.games .templates');
