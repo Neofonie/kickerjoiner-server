@@ -76,7 +76,7 @@
         <input type="text" name="clientnick" placeholder="anonymous"
                value=""
                onkeypress="(event.key.toLowerCase() === 'enter') ? sendClientNick() : null"/>
-        <button onclick="toLowerCase()">Set your clientname</button>
+        <button onclick="sendClientNick()">Set your clientname</button>
     </div>
     <script>
         const tplClient = (client) => {
