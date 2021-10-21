@@ -8,9 +8,9 @@ const options = commandLineArgs([
 ]);
 const maxJoiner = 4;
 const port = options.port;
-const dbNr = options.db || '';
 const host = '0.0.0.0';
-const onlineApi = `https://kij.willy-selma.de/db${dbNr}`;
+const api = 'https://kij.willy-selma.de';
+const onlineApi = `${api}/db`;
 console.log('hi there kickerjoiner websocket', host, port, onlineApi);
 
 let wss = null;
@@ -36,6 +36,22 @@ async function db(method, url, data) {
         },
         body: JSON.stringify(data),
     }).then((res) => res.json());
+}
+
+async function sendNotification(msg) {
+    const payload = msg || 'ich bin ein notify';
+    const ttl = 24 * 60 * 60;
+
+    await fetch(api + '/push/sendNotification', {
+        method: 'post',
+        headers: {
+            'Content-type': 'application/json'
+        },
+        body: JSON.stringify({
+            payload,
+            ttl,
+        }),
+    });
 }
 
 const createNewGame = async (newjoiner) => {
@@ -138,6 +154,7 @@ async function handleGoGoGo(joinerId, gameId) {
             donedate: getTimestampNow(),
         });
         answer.message = 'GAME_GOGOGO';
+        sendNotification('GOGOGO #' + game.id);
     } else {
         answer.message = 'GAME_UPDATE';
     }
