@@ -3,5 +3,63 @@
     "maxjoiner": 4
   },
   "games": [
+    {
+      "date": 1606736108,
+      "done": true,
+      "donedate": 1606745897,
+      "joiner": [
+        {
+          "id": 1,
+          "clientid": 19,
+          "nick": "willy",
+          "date": 1606736108,
+          "gogogo": true
+        },
+        {
+          "id": 2,
+          "clientid": 19,
+          "nick": "andre",
+          "date": 1606736117,
+          "gogogo": true
+        },
+        {
+          "id": 3,
+          "clientid": 19,
+          "nick": "colin",
+          "date": 1606743961,
+          "gogogo": true
+        },
+        {
+          "id": 4,
+          "clientid": 19,
+          "nick": "joerg",
+          "date": 1606743970,
+          "gogogo": true
+        }
+      ],
+      "id": 3
+    },
+    {
+      "date": 1634819010,
+      "done": false,
+      "donedate": 0,
+      "joiner": [
+        {
+          "id": 1,
+          "clientid": 20,
+          "nick": "pwa willy",
+          "date": 1634819010,
+          "gogogo": false
+        },
+        {
+          "id": 2,
+          "clientid": 19,
+          "nick": "willy admin",
+          "date": 1634819012,
+          "gogogo": false
+        }
+      ],
+      "id": 4
+    }
   ]
 }

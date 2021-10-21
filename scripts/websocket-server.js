@@ -1,4 +1,4 @@
-const WebSocket = require("ws");
+const WebSocket = require('ws');
 const fetch = require('node-fetch');
 const commandLineArgs = require('command-line-args')
 const options = commandLineArgs([
